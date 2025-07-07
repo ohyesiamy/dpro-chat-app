@@ -6,6 +6,7 @@ import { Firestore } from '@google-cloud/firestore'
 import { resolve } from 'path'
 import { useRuntimeConfig } from '#imports'
 import { readFileSync } from 'fs'
+import { getCredentialsPath } from '../utils/auth-decoder'
 
 class FirebaseService {
   private static instance: FirebaseService
@@ -29,9 +30,10 @@ class FirebaseService {
     }
 
     try {
-      // Firebase認証情報のパスを環境変数から取得
+      // Firebase認証情報のパスを環境変数から取得（Vercel対応）
       const config = useRuntimeConfig()
-      const credentialsPath = config.googleApplicationCredentials || 
+      const { firebasePath } = getCredentialsPath()
+      const credentialsPath = firebasePath || config.googleApplicationCredentials || 
         process.env.GOOGLE_APPLICATION_CREDENTIALS ||
         resolve(process.cwd(), '../../../../novaspheregraph-firebase-adminsdk-fbsvc-b1ee897140.json')
 

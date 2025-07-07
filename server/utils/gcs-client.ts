@@ -1,4 +1,5 @@
 import { Storage } from '@google-cloud/storage'
+import { getCredentialsPath } from './auth-decoder'
 
 let storage: Storage | null = null
 
@@ -6,8 +7,9 @@ export function getGCSClient(): Storage {
   if (!storage) {
     const config = useRuntimeConfig()
     
-    // GCS認証情報の設定
-    const keyPath = config.gcsKeyPath || config.googleApplicationCredentials
+    // GCS認証情報の設定（Vercel対応）
+    const { gcsPath } = getCredentialsPath()
+    const keyPath = gcsPath || config.gcsKeyPath || config.googleApplicationCredentials
     
     if (!keyPath) {
       throw new Error('GCS認証情報が設定されていません')
