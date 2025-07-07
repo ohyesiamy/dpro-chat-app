@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* カスタムスタイル */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+  }
+}
+
+@layer components {
+  /* チャットメッセージのスタイル */
+  .message-bubble {
+    @apply rounded-lg px-4 py-2 max-w-[80%] break-words;
+  }
+  
+  .message-user {
+    @apply bg-blue-500 text-white self-end;
+  }
+  
+  .message-assistant {
+    @apply bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 self-start;
+  }
+  
+  /* ローディングアニメーション */
+  .typing-indicator {
+    @apply flex space-x-1;
+  }
+  
+  .typing-indicator span {
+    @apply w-2 h-2 bg-gray-500 rounded-full animate-bounce;
+  }
+  
+  .typing-indicator span:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  
+  .typing-indicator span:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+  
+  /* カスタムスクロールバー */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500 dark:bg-gray-500;
+  }
+}
+
+/* マークダウンスタイル */
+.markdown-content {
+  @apply max-w-none;
+}
+
+.markdown-content pre {
+  @apply bg-gray-800 text-gray-100 p-3 rounded-lg overflow-x-auto;
+}
+
+.markdown-content code {
+  @apply bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm;
+}
+
+.markdown-content pre code {
+  @apply bg-transparent p-0;
+}
+
+.markdown-content strong {
+  @apply font-bold;
+}
+
+.markdown-content ul {
+  @apply list-disc list-inside space-y-1;
+}
+
+.markdown-content li {
+  @apply ml-4;
+}

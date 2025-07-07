@@ -1,0 +1,184 @@
+# Dpro Chat Application Directory Structure
+
+## Overview
+Nuxt 3ベースの広告データ分析AIチャットアプリケーション
+- **Framework**: Nuxt 3 (SSR無効)
+- **言語**: TypeScript
+- **スタイリング**: Tailwind CSS
+- **状態管理**: Pinia
+- **バックエンド統合**: Firebase (Firestore & Storage)
+- **AI/ML**: LangChain + Google Gemini API
+
+## Directory Structure
+
+### Root Level
+```
+dpro-chat-app/
+├── package.json          # Nuxt 3アプリ設定、依存関係定義
+├── nuxt.config.ts        # Nuxt設定（モジュール、環境変数等）
+├── tsconfig.json         # TypeScript設定
+├── tailwind.config.js    # Tailwind CSS設定
+├── app.vue              # ルートVueコンポーネント
+└── README.md            # プロジェクトドキュメント
+```
+
+### Frontend Structure
+```
+├── pages/               # ページコンポーネント（自動ルーティング）
+│   ├── index.vue       # ホームページ（チャット画面）
+│   ├── analytics.vue   # データ分析ダッシュボード
+│   └── about.vue       # アバウトページ
+│
+├── components/          # 再利用可能なVueコンポーネント
+│   ├── ChatInterface.vue    # メインチャットUI
+│   ├── MessageBubble.vue    # チャットメッセージ表示
+│   ├── QuickQuestions.vue   # クイック質問ボタン
+│   ├── DataStats.vue        # データ統計表示
+│   └── LoadingIndicator.vue # ローディング表示
+│
+├── layouts/             # レイアウトコンポーネント
+│   └── default.vue     # デフォルトレイアウト
+│
+├── stores/              # Pinia状態管理
+│   ├── chat.ts         # チャット状態（メッセージ、セッション）
+│   └── data.ts         # データ統計状態
+│
+└── assets/              # 静的アセット
+    └── css/
+        └── main.css    # グローバルCSS
+```
+
+### Server-Side Structure
+```
+server/
+├── api/                 # APIエンドポイント
+│   ├── chat.post.ts    # POST /api/chat - チャット処理
+│   ├── status.get.ts   # GET /api/status - システム状態
+│   └── data/           # データ関連API
+│       ├── summary.get.ts   # GET /api/data/summary
+│       ├── platforms.get.ts # GET /api/data/platforms
+│       └── genres.get.ts    # GET /api/data/genres
+│
+├── services/            # ビジネスロジック層
+│   ├── chatService.ts  # チャット処理サービス（シングルトン）
+│   ├── dataService.ts  # データ処理サービス
+│   └── firebaseService.ts # Firebase統合（シングルトン）
+│
+├── utils/               # ユーティリティ
+│   ├── rag.ts          # RAGシステム（LangChain統合）
+│   ├── rag-enhanced.ts # 拡張RAGシステム（時系列データ対応）
+│   ├── parquet-parser.ts # Parquetパーサー（parquetjs-lite使用、parquet-wasm無効化）
+│   └── gcs-client.ts   # Google Cloud Storageクライアント（バケット名修正対応）
+│
+├── types/               # TypeScript型定義
+│   └── index.ts        # 共通型定義
+│
+└── tsconfig.json       # サーバー用TypeScript設定
+```
+
+### Public Assets
+```
+public/
+├── favicon.ico         # ファビコン
+└── robots.txt         # SEO用robots.txt
+```
+
+## Key Architecture Components
+
+### 1. API Endpoints
+- **POST /api/chat**: チャットメッセージ処理
+  - Request: `{ message: string, session_id?: string }`
+  - Response: `{ message: string, session_id: string, timestamp: Date, sources: any[] }`
+
+- **GET /api/status**: システム状態確認
+  - Response: `{ status: string, version: string, model_loaded: boolean, data_loaded: boolean, uptime: number, active_sessions: number }`
+
+- **GET /api/data/summary**: データサマリー取得
+- **GET /api/data/platforms**: プラットフォーム統計
+- **GET /api/data/genres**: ジャンル統計
+
+### 2. Core Services
+
+#### ChatService (Singleton)
+- チャットセッション管理
+- RAGシステムとの統合
+- レスポンス生成
+- セッション履歴管理
+
+#### DataService
+- Parquetファイル読み込み
+- データ集計・分析
+- キャッシュ管理
+
+#### FirebaseService (Singleton)
+- Firebase Admin SDK初期化
+- Firestore操作
+- Cloud Storage操作
+- 認証情報管理
+
+### 3. RAG System (utils/rag.ts)
+- LangChain統合
+- Google Gemini API使用
+- ベクトル検索
+- コンテキスト生成
+
+### 4. State Management (Pinia)
+- **chatStore**: チャット状態管理
+  - messages: メッセージ履歴
+  - sessionId: セッションID
+  - isLoading: ローディング状態
+  - error: エラー状態
+
+- **dataStore**: データ統計管理
+  - summary: データサマリー
+  - platformStats: プラットフォーム統計
+  - genreStats: ジャンル統計
+
+## Configuration
+
+### 環境変数 (.env)
+```
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/firebase-admin-sdk.json
+FIREBASE_PROJECT_ID=novaspheregraph
+GOOGLE_API_KEY=your-gemini-api-key
+GCS_BUCKET_NAME=novaspheregraph.firebasestorage.app
+GCS_KEY_PATH=/path/to/firebase-admin-sdk.json
+DISABLE_PARQUET_WASM=true
+```
+
+### 主要な依存関係
+- **Nuxt 3**: ^3.17.6
+- **LangChain**: ^0.3.29
+- **Firebase Admin**: ^12.7.0
+- **Google Gemini**: ^0.2.14
+- **Pinia**: ^3.0.3
+- **Tailwind CSS**: ^6.14.0
+
+## Build & Development Commands
+```bash
+# 開発サーバー起動
+npm run dev
+
+# プロダクションビルド
+npm run build
+
+# ビルドプレビュー
+npm run preview
+
+# 静的サイト生成
+npm run generate
+```
+
+## Data Flow
+1. ユーザー → ChatInterface.vue → chatStore
+2. chatStore → POST /api/chat → chatService
+3. chatService → ragSystem → LangChain/Gemini
+4. ragSystem → firebaseService → Firestore/Storage
+5. レスポンス → chatStore → MessageBubble.vue → ユーザー
+
+## 特徴
+- **SSR無効**: クライアントサイドレンダリング専用
+- **リアルタイム処理**: チャットレスポンスの即時生成
+- **セッション管理**: 24時間の自動クリーンアップ
+- **エラーハンドリング**: 各層での適切なエラー処理
+- **型安全**: TypeScriptによる完全な型定義
