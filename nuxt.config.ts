@@ -37,7 +37,10 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
-    preset: 'vercel',
+    // preset: 'vercel', // 静的サイト生成のためコメントアウト
+    prerender: {
+      crawlLinks: true
+    },
     // Node.js互換性を有効化
     experimental: {
       wasm: true
