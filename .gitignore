@@ -28,3 +28,4 @@ logs
 *.json
 *-service-account.json
 *-firebase-adminsdk-*.json
+.vercel
