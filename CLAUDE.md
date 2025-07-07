@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Nuxt 3 chat application that provides an AI-powered interface for analyzing advertising data from Instagram, Facebook, and other platforms. The application uses Firebase for data storage and Google's Gemini API for AI responses via a RAG (Retrieval-Augmented Generation) system.
+Dpro Chat is a Nuxt 3 application that provides an AI-powered chat interface for analyzing advertising data from Instagram, Facebook, and other social media platforms. It processes ~350 million rows of advertising data using Firebase, Google Cloud Storage, and Google's Gemini API via a RAG (Retrieval-Augmented Generation) system.
 
 ## Development Commands
 
@@ -64,7 +64,7 @@ The application uses two storage systems:
 
 ### Data Path Structure
 
-GCS data is stored with the following structure (without `dpro/` prefix):
+GCS data is stored with the following structure:
 - `timeseries_data/by_genre/genre_timeseries.parquet`
 - `timeseries_data/by_platform/platform_timeseries.parquet`
 - `timeseries_data/by_advertiser/advertiser_timeseries.parquet`
@@ -86,7 +86,7 @@ All API endpoints are defined in `server/api/`:
 - `POST /api/parquet/parse` - Parquet file parsing
 - `POST /api/rag/query` - Direct RAG queries
 
-## Environment Setup
+## Environment Configuration
 
 Create `.env` file with:
 ```env
@@ -106,20 +106,12 @@ GCS_PROJECT_ID=gen-lang-client-0409194436
 DISABLE_PARQUET_WASM=true
 ```
 
-## Current Known Issues
+### Vercel Production Environment
+For Vercel deployment, use Base64 encoded credentials:
+- `GOOGLE_APPLICATION_CREDENTIALS_BASE64`
+- `GCS_KEY_BASE64`
 
-1. **Parquet WASM Module Error**
-   - `parquet-wasm` causes "require is not defined" error in ES module context
-   - Solution: Set `DISABLE_PARQUET_WASM=true` to use `parquetjs-lite` fallback
-   - Error is logged but doesn't prevent app from running
-
-2. **Missing RAG Data Warning**
-   - `rag_optimized_data.parquet` is optional and warning has been suppressed
-   - App functions normally without this file
-
-3. **GCS Permissions**
-   - Service account must have `Storage Object Viewer` role on `dpro-ns` bucket
-   - Grant access with: `gcloud storage buckets add-iam-policy-binding gs://dpro-ns --member="serviceAccount:dpro-chat-app@gen-lang-client-0409194436.iam.gserviceaccount.com" --role="roles/storage.objectViewer"`
+Use this command to encode: `base64 -i your-service-account.json | pbcopy`
 
 ## Key Implementation Details
 
@@ -144,6 +136,21 @@ DISABLE_PARQUET_WASM=true
 - `server/types/index.ts` - Chat and data interfaces
 - `server/types/timeseries.ts` - Time series and RAG-specific types
 
+## Current Known Issues
+
+1. **Parquet WASM Module Error**
+   - `parquet-wasm` causes "require is not defined" error in ES module context
+   - Solution: Set `DISABLE_PARQUET_WASM=true` to use `parquetjs-lite` fallback
+   - Error is logged but doesn't prevent app from running
+
+2. **Missing RAG Data Warning**
+   - `rag_optimized_data.parquet` is optional and warning has been suppressed
+   - App functions normally without this file
+
+3. **GCS Permissions**
+   - Service account must have `Storage Object Viewer` role on `dpro-ns` bucket
+   - Grant access with: `gcloud storage buckets add-iam-policy-binding gs://dpro-ns --member="serviceAccount:dpro-chat-app@gen-lang-client-0409194436.iam.gserviceaccount.com" --role="roles/storage.objectViewer"`
+
 ## Data Context
 
 The application analyzes advertising data with:
@@ -152,3 +159,27 @@ The application analyzes advertising data with:
 - Platforms: Instagram (60.4%), Facebook (28.8%), LAP (14.8%), X (9.5%), TikTok (0.4%)
 - Primary focus: Beauty/health sector (70%)
 - Data gaps: 2023-12-18 to 2024-01-11, 2024-04-24 to 2024-07-09
+
+## Development Notes
+
+### Query Processing Flow
+1. User message → ChatInterface.vue → chatStore
+2. chatStore → POST /api/chat → ChatService
+3. ChatService analyzes query for time-based keywords
+4. Routes to Enhanced RAG (time-series) or Basic RAG (general)
+5. RAG system generates response with Gemini
+6. Response streams back to user
+
+### Adding New Features
+- Services must be singleton instances (see existing patterns)
+- API routes go in `server/api/`
+- Use TypeScript interfaces in `server/types/`
+- Handle errors gracefully with appropriate fallbacks
+- Cache expensive operations where appropriate
+
+### Testing Locally
+1. Ensure all environment variables are set
+2. Run `npm run dev`
+3. Test chat functionality at `http://localhost:3000`
+4. Monitor server console for error logs
+5. Check browser console for client-side issues
