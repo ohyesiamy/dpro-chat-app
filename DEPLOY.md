@@ -2,6 +2,18 @@
 
 このドキュメントでは、Dpro Chat AppをVercelにデプロイする手順を説明します。
 
+## 重要：環境変数の違い
+
+### ローカル環境（.env）
+- `GOOGLE_APPLICATION_CREDENTIALS`: ローカルファイルパス
+- `GCS_KEY_PATH`: ローカルファイルパス
+
+### 本番環境（Vercel）
+- `GOOGLE_APPLICATION_CREDENTIALS_BASE64`: Base64エンコードされたFirebase認証情報
+- `GCS_KEY_BASE64`: Base64エンコードされたGCS認証情報
+
+アプリケーションは自動的に環境を検出し、適切な認証方法を使用します。
+
 ## 前提条件
 
 - Vercelアカウント
@@ -37,11 +49,19 @@ DISABLE_PARQUET_WASM=true
 
 1. **GOOGLE_APPLICATION_CREDENTIALS_BASE64**
    - Firebase Admin SDKキーのBase64エンコード値
-   - 既にクリップボードにコピー済み
+   - エンコード方法：
+     ```bash
+     base64 -i /path/to/firebase-admin-sdk.json | pbcopy
+     ```
 
 2. **GCS_KEY_BASE64**
    - GCSサービスアカウントキーのBase64エンコード値
-   - `/tmp/gcs-key-base64.txt`に保存済み
+   - エンコード方法：
+     ```bash
+     base64 -i /path/to/gcs-service-account.json | pbcopy
+     ```
+
+**注意**: これらの環境変数は本番環境専用です。ローカル環境では通常のファイルパスを使用します。
 
 ### 3. ビルド設定の確認
 
@@ -66,10 +86,20 @@ DISABLE_PARQUET_WASM=true
 
 - Firebaseの認証情報が正しくBase64エンコードされているか確認
 - GCSバケットへのアクセス権限を確認
+- エラー「認証情報が見つかりません」の場合：
+  - `GOOGLE_APPLICATION_CREDENTIALS_BASE64`と`GCS_KEY_BASE64`が設定されているか確認
+  - Base64エンコードが正しく行われているか確認（改行が含まれていないか）
 
 ### Parquet関連のエラー
 
 - `DISABLE_PARQUET_WASM=true`が設定されているか確認
+
+### 環境変数の確認方法
+
+Vercelダッシュボードで：
+1. Project Settings → Environment Variables
+2. すべての必須環境変数が設定されているか確認
+3. Base64値に改行や余分な空白が含まれていないか確認
 
 ## セキュリティ注意事項
 
